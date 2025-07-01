@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .admin-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .product-image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .btn-action {
+            margin-right: 5px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+        .notification.error {
+            background-color: #dc3545;
+        }
+        .existing-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .existing-image-container {
+            position: relative;
+        }
+        .existing-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .remove-image-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">Admin Panel</a>
+            <a href="index.html" class="btn btn-outline-primary">View Shop</a>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="admin-container">
+            <h2 class="mb-4">Add New Product</h2>
+            <form id="product-form">
+                <div class="mb-3">
+                    <label for="product-name" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" id="product-name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="product-price" class="form-label">Price</label>
+                    <input type="number" class="form-control" id="product-price" required>
+                </div>
+                <div class="mb-3">
+                    <label for="product-stock" class="form-label">Stock</label>
+                    <input type="number" class="form-control" id="product-stock" min="0" value="0" required>
+                </div>
+                <div class="mb-3">
+                    <label for="product-description" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="product-description" rows="3"></textarea>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="product-pinned">
+                    <label class="form-check-label" for="product-pinned">Pin this product (show on top)</label>
+                </div>
+                <div class="mb-3">
+                    <label for="product-images" class="form-label">Product Images (Max 10)</label>
+                    <input type="file" class="form-control" id="product-images" multiple accept="image/*">
+                    <div class="mt-2" id="image-preview-container"></div>
+                    <div class="existing-images mt-2" id="existing-images-container"></div>
+                </div>
+                <input type="hidden" id="product-id">
+                <button type="submit" class="btn btn-primary" id="submit-btn">Add Product</button>
+                <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">Cancel</button>
+            </form>
+        </div>
+
+        <div class="admin-container mt-4">
+            <h2 class="mb-4">Product List</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Pinned</th>
+                            <th>Images</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div class="notification" id="notification">Upload Complete!</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productForm = document.getElementById('product-form');
+            const productList = document.getElementById('product-list');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const existingImagesContainer = document.getElementById('existing-images-container');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const notification = document.getElementById('notification');
+            let products = [];
+            let editMode = false;
+            let currentEditId = null;
+            let existingImages = [];
+
+            fetchProducts();
+
+            document.getElementById('product-images').addEventListener('change', function(e) {
+                imagePreviewContainer.innerHTML = '';
+                const files = e.target.files;
+                if (files.length > 10) {
+                    showNotification('Maximum 10 images allowed', true);
+                    e.target.value = '';
+                    return;
+                }
+                
+                Array.from(files).forEach(file => {
+                    if (!file.type.match('image.*')) {
+                        showNotification('Only image files are allowed', true);
+                        e.target.value = '';
+                        imagePreviewContainer.innerHTML = '';
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.classList.add('product-image-preview');
+                        imagePreviewContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            productForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('product-name').value;
+                const price = parseFloat(document.getElementById('product-price').value);
+                const stock = parseInt(document.getElementById('product-stock').value);
+                const description = document.getElementById('product-description').value;
+                const pinned = document.getElementById('product-pinned').checked;
+                const imageInput = document.getElementById('product-images');
+                
+                if (!name || !price || stock < 0) {
+                    showNotification('Please fill all required fields correctly', true);
+                    return;
+                }
+                
+                if (editMode) {
+                    updateProduct(currentEditId, name, price, stock, description, pinned, imageInput.files, existingImages);
+                } else {
+                    if (imageInput.files.length === 0) {
+                        showNotification('Please upload at least one image for new product', true);
+                        return;
+                    }
+                    addProduct(name, price, stock, description, pinned, imageInput.files);
+                }
+            });
+
+            cancelBtn.addEventListener('click', function() {
+                resetForm();
+            });
+
+            function showLoading() {
+                loadingOverlay.style.display = 'flex';
+            }
+
+            function hideLoading() {
+                loadingOverlay.style.display = 'none';
+            }
+
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.className = isError ? 'notification error' : 'notification';
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+
+            function fetchProducts() {
+                fetch('/api/products')
+                    .then(response => response.json())
+                    .then(data => {
+                        products = data;
+                        renderProductList();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                        showNotification('Error loading products', true);
+                    });
+            }
+
+            function renderProductList() {
+                productList.innerHTML = '';
+                
+                if (products.length === 0) {
+                    productList.innerHTML = '<tr><td colspan="6" class="text-center">No products available</td></tr>';
+                    return;
+                }
+                
+                // Sort products: pinned first
+                const sortedProducts = [...products].sort((a, b) => (b.pinned || false) - (a.pinned || false));
+                
+                sortedProducts.forEach(product => {
+                    const row = document.createElement('tr');
+                    
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = product.name;
+                    
+                    const priceCell = document.createElement('td');
+                    priceCell.textContent = 'Rp ' + product.price.toLocaleString();
+                    
+                    const stockCell = document.createElement('td');
+                    stockCell.textContent = product.stock || 0;
+                    
+                    const pinnedCell = document.createElement('td');
+                    pinnedCell.innerHTML = product.pinned ? '<span class="badge bg-success">Pinned</span>' : '';
+                    
+                    const imagesCell = document.createElement('td');
+                    if (product.images && product.images.length > 0) {
+                        const img = document.createElement('img');
+                        img.src = `/uploads/${product.images[0]}`;
+                        img.style.maxWidth = '50px';
+                        img.style.maxHeight = '50px';
+                        imagesCell.appendChild(img);
+                    }
+                    
+                    const actionsCell = document.createElement('td');
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Edit';
+                    editBtn.classList.add('btn', 'btn-sm', 'btn-warning', 'btn-action');
+                    editBtn.addEventListener('click', () => editProduct(product.id));
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.classList.add('btn', 'btn-sm', 'btn-danger', 'btn-action');
+                    deleteBtn.addEventListener('click', () => deleteProduct(product.id));
+                    
+                    const viewBtn = document.createElement('a');
+                    viewBtn.textContent = 'View';
+                    viewBtn.classList.add('btn', 'btn-sm', 'btn-info', 'btn-action');
+                    viewBtn.href = `detail.html?id=${product.id}`;
+                    
+                    actionsCell.appendChild(editBtn);
+                    actionsCell.appendChild(deleteBtn);
+                    actionsCell.appendChild(viewBtn);
+                    
+                    row.appendChild(nameCell);
+                    row.appendChild(priceCell);
+                    row.appendChild(stockCell);
+                    row.appendChild(pinnedCell);
+                    row.appendChild(imagesCell);
+                    row.appendChild(actionsCell);
+                    
+                    productList.appendChild(row);
+                });
+            }
+
+            function addProduct(name, price, stock, description, pinned, imageFiles) {
+                showLoading();
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('price', price);
+                formData.append('stock', stock);
+                formData.append('description', description);
+                formData.append('pinned', pinned);
+                
+                for (let i = 0; i < imageFiles.length; i++) {
+                    formData.append('images', imageFiles[i]);
+                }
+                
+                fetch('/api/products', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    fetchProducts();
+                    resetForm();
+                    hideLoading();
+                    showNotification('Product uploaded successfully!');
+                })
+                .catch(error => {
+                    console.error('Error adding product:', error);
+                    hideLoading();
+                    showNotification('Upload failed!', true);
+                });
+            }
+
+            function updateProduct(id, name, price, stock, description, pinned, imageFiles, existingImgs) {
+                showLoading();
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('price', price);
+                formData.append('stock', stock);
+                formData.append('description', description);
+                formData.append('pinned', pinned);
+                formData.append('_method', 'PUT');
+                
+                // Add existing images that weren't removed
+                existingImgs.forEach(img => {
+                    formData.append('existingImages[]', img);
+                });
+                
+                // Add new images if any
+                if (imageFiles.length > 0) {
+                    for (let i = 0; i < imageFiles.length; i++) {
+                        formData.append('images', imageFiles[i]);
+                    }
+                }
+                
+                fetch(`/api/products/${id}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    fetchProducts();
+                    resetForm();
+                    hideLoading();
+                    showNotification('Product updated successfully!');
+                })
+                .catch(error => {
+                    console.error('Error updating product:', error);
+                    hideLoading();
+                    showNotification('Update failed!', true);
+                });
+            }
+
+            function deleteProduct(id) {
+                if (confirm('Are you sure you want to delete this product?')) {
+                    showLoading();
+                    fetch(`/api/products/${id}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        fetchProducts();
+                        hideLoading();
+                        showNotification('Product deleted successfully!');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting product:', error);
+                        hideLoading();
+                        showNotification('Delete failed!', true);
+                    });
+                }
+            }
+
+            function editProduct(id) {
+                const product = products.find(p => p.id == id);
+                if (product) {
+                    editMode = true;
+                    currentEditId = id;
+                    existingImages = [...product.images];
+                    
+                    document.getElementById('product-name').value = product.name;
+                    document.getElementById('product-price').value = product.price;
+                    document.getElementById('product-stock').value = product.stock || 0;
+                    document.getElementById('product-description').value = product.description || '';
+                    document.getElementById('product-pinned').checked = product.pinned || false;
+                    document.getElementById('product-id').value = product.id;
+                    
+                    // Show existing images with remove option
+                    existingImagesContainer.innerHTML = '';
+                    existingImages.forEach((image, index) => {
+                        const container = document.createElement('div');
+                        container.className = 'existing-image-container';
+                        
+                        const img = document.createElement('img');
+                        img.src = `/uploads/${image}`;
+                        img.className = 'existing-image';
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-image-btn';
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.addEventListener('click', () => {
+                            existingImages.splice(index, 1);
+                            container.remove();
+                        });
+                        
+                        container.appendChild(img);
+                        container.appendChild(removeBtn);
+                        existingImagesContainer.appendChild(container);
+                    });
+                    
+                    document.getElementById('submit-btn').textContent = 'Update Product';
+                    cancelBtn.style.display = 'inline-block';
+                    document.getElementById('product-images').required = false;
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            function resetForm() {
+                productForm.reset();
+                imagePreviewContainer.innerHTML = '';
+                existingImagesContainer.innerHTML = '';
+                existingImages = [];
+                editMode = false;
+                currentEditId = null;
+                document.getElementById('submit-btn').textContent = 'Add Product';
+                cancelBtn.style.display = 'none';
+                document.getElementById('product-images').required = true;
+            }
+        });
+    </script>
+</body>
+</html>
