@@ -59,9 +59,23 @@ const saveDatabase = () => {
 
 loadDatabase();
 
+// Helper function to clean up unused images
+const cleanupImages = (imagesToKeep) => {
+    if (!fs.existsSync('uploads')) return;
+
+    const allFiles = fs.readdirSync('uploads');
+    allFiles.forEach(file => {
+        if (!imagesToKeep.includes(file)) {
+            fs.unlinkSync(path.join('uploads', file));
+        }
+    });
+};
+
 // API Endpoints
 app.get('/api/products', (req, res) => {
-    res.json(db.products);
+    // Sort pinned products first
+    const sortedProducts = [...db.products].sort((a, b) => (b.pinned || false) - (a.pinned || false));
+    res.json(sortedProducts);
 });
 
 app.get('/api/products/:id', (req, res) => {
@@ -75,7 +89,7 @@ app.get('/api/products/:id', (req, res) => {
 
 app.post('/api/products', upload.array('images', 10), (req, res) => {
     try {
-        const { name, price, description } = req.body;
+        const { name, price, stock, description, pinned } = req.body;
         
         if (!name || !price || !req.files || req.files.length === 0) {
             // Clean up uploaded files if validation fails
@@ -93,7 +107,9 @@ app.post('/api/products', upload.array('images', 10), (req, res) => {
             id: Date.now().toString(),
             name,
             price: parseFloat(price),
+            stock: parseInt(stock) || 0,
             description: description || '',
+            pinned: pinned === 'true',
             images
         };
         
@@ -109,7 +125,7 @@ app.post('/api/products', upload.array('images', 10), (req, res) => {
 
 app.post('/api/products/:id', upload.array('images', 10), (req, res) => {
     try {
-        const { name, price, description } = req.body;
+        const { name, price, stock, description, pinned } = req.body;
         const productId = req.params.id;
         const productIndex = db.products.findIndex(p => p.id == productId);
         
@@ -123,18 +139,35 @@ app.post('/api/products/:id', upload.array('images', 10), (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
         
-        let images = [...db.products[productIndex].images];
+        // Get existing images that weren't removed
+        const existingImages = req.body.existingImages 
+            ? Array.isArray(req.body.existingImages) 
+                ? req.body.existingImages 
+                : [req.body.existingImages]
+            : [];
         
-        if (req.files && req.files.length > 0) {
-            images = [...images, ...req.files.map(file => file.filename)];
-        }
+        // Combine existing and new images
+        const newImages = req.files ? req.files.map(file => file.filename) : [];
+        const allImages = [...existingImages, ...newImages];
+        
+        // Clean up images that were removed
+        const oldProduct = db.products[productIndex];
+        const imagesToDelete = oldProduct.images.filter(img => !allImages.includes(img));
+        imagesToDelete.forEach(img => {
+            const imagePath = path.join(__dirname, 'uploads', img);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        });
         
         const updatedProduct = {
-            ...db.products[productIndex],
+            ...oldProduct,
             name,
             price: parseFloat(price),
+            stock: parseInt(stock) || 0,
             description: description || '',
-            images
+            pinned: pinned === 'true',
+            images: allImages
         };
         
         db.products[productIndex] = updatedProduct;
@@ -175,11 +208,6 @@ app.delete('/api/products/:id', (req, res) => {
         console.error('Error deleting product:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-});
-
-// Serve static files
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware
