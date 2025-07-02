@@ -3,325 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZizzX Shop</title>
+    <title>Simple Shop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
         }
-
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: #0f172a !important;
-            letter-spacing: -0.02em;
-        }
-
         .shop-header {
-            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-            padding: 4rem 0;
-            margin-bottom: 3rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .shop-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23e2e8f0" opacity="0.4"/><circle cx="75" cy="75" r="1" fill="%23cbd5e1" opacity="0.3"/><circle cx="50" cy="10" r="0.5" fill="%23e2e8f0" opacity="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
-            opacity: 0.6;
-        }
-
-        .shop-header .container {
-            position: relative;
-            z-index: 2;
-        }
-
-        .profile-img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 4px solid #ffffff;
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 1.5rem;
-        }
-
-        .profile-img:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15);
-        }
-
-        .shop-header h1 {
-            font-weight: 900;
-            font-size: 3rem;
-            color: #0f172a;
-            margin-bottom: 1rem;
-            letter-spacing: -0.03em;
-            text-shadow: 0 2px 4px rgba(15, 23, 42, 0.1);
-        }
-
-        .shop-header p {
-            color: #475569;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-            font-weight: 500;
-        }
-
-        .container {
-            max-width: 1200px;
-        }
-
-        .product-card {
-            background: #ffffff;
-            border: none;
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background-color: #ffffff;
+            padding: 2rem 0;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-            position: relative;
+            border-bottom: 1px solid #e9ecef;
         }
-
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
+        .product-card {
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            background-color: #ffffff;
         }
-
-        .product-card:hover::before {
-            opacity: 1;
-        }
-
         .product-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-
         .product-img {
-            height: 280px;
+            height: 200px;
             object-fit: cover;
             width: 100%;
-            transition: transform 0.4s ease;
-            background: #f1f5f9;
         }
-
-        .product-card:hover .product-img {
-            transform: scale(1.08);
-        }
-
-        .card-body {
-            padding: 1.5rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        .card-title {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.01em;
-        }
-
-        .card-text {
-            font-weight: 800;
-            font-size: 1.4rem;
-            color: #059669 !important;
-            margin-top: auto;
-        }
-
         .btn-buy {
-            background: #059669;
+            background-color: #28a745;
             color: white;
             border: none;
             width: 100%;
-            padding: 0.875rem 1.5rem;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin: 1rem;
-            margin-bottom: 0;
-            position: relative;
-            overflow: hidden;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
-
-        .btn-buy::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn-buy:hover::before {
-            left: 100%;
-        }
-
         .btn-buy:hover {
-            background: #047857;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+            background-color: #218838;
         }
-
-        .btn-buy:active {
-            transform: translateY(0);
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         .card-link {
             text-decoration: none;
             color: inherit;
-            display: block;
         }
-
         .card-link:hover {
             text-decoration: none;
             color: inherit;
         }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 0 1rem;
+        .stock-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
         }
-
-        .no-products {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #64748b;
-            font-size: 1.125rem;
-            font-weight: 500;
+        .pinned-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ffc107;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
         }
-
-        .loading-state {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 4rem;
-            color: #64748b;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e2e8f0;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 1rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .shop-header h1 {
-                font-size: 2.5rem;
-            }
-            
-            .shop-header p {
-                font-size: 1rem;
-                padding: 0 1rem;
-            }
-            
-            .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1.5rem;
-            }
-            
-            .product-img {
-                height: 200px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .shop-header h1 {
-                font-size: 2rem;
-            }
-            
-            .products-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                padding: 0 0.5rem;
-            }
-        }
-
-        /* Smooth page transitions */
-        body {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .image-container {
+            position: relative;
         }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">ZizzX Shop</a>
+            <a class="navbar-brand fw-bold" href="#">Simple Shop</a>
+            <div class="d-flex">
+                <a href="a5ujemb0t.html" class="btn btn-outline-dark">Admin</a>
+            </div>
         </div>
     </nav>
 
     <div class="shop-header text-center">
         <div class="container">
-            <img src="https://files.catbox.moe/n511d3.jpg" alt="Profile" class="profile-img mb-3">
-            <h1 class="fw-bold mb-3">ZizzX Shop</h1>
-            <p class="text-muted">🍀 Kami menjual Pet dan Shekles secara aman & terpercaya 100%! 🍀
-Klik salah satu foto produk untuk melihat detail lengkap, termasuk deskripsi dan informasi penting lainnya.</p>
+            <img src="https://via.placeholder.com/100" alt="Profile" class="profile-img mb-3">
+            <h1 class="fw-bold mb-3">Simple Shop</h1>
+            <p class="text-muted">Quality products at affordable prices</p>
         </div>
     </div>
 
     <div class="container mb-5">
-        <div class="products-grid" id="products-container">
+        <div class="row" id="products-container">
             <!-- Products will be loaded here by JavaScript -->
         </div>
     </div>
@@ -332,41 +121,47 @@ Klik salah satu foto produk untuk melihat detail lengkap, termasuk deskripsi dan
             fetchProducts();
             
             function fetchProducts() {
-                const container = document.getElementById('products-container');
-                container.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Loading products...</div>';
-                
                 fetch('/api/products')
                     .then(response => response.json())
                     .then(products => {
+                        const container = document.getElementById('products-container');
                         container.innerHTML = '';
                         
                         if (products.length === 0) {
-                            container.innerHTML = '<div class="no-products">No products available</div>';
+                            container.innerHTML = '<div class="col-12 text-center"><p>No products available</p></div>';
                             return;
                         }
                         
                         products.forEach(product => {
                             if (!product.images || product.images.length === 0) return;
                             
-                            const productCard = document.createElement('div');
-                            productCard.innerHTML = `
-                                <div class="product-card card h-100">
-                                    <a href="detail.html?id=${product.id}" class="card-link">
-                                        <img src="/uploads/${product.images[0]}" class="product-img card-img-top" alt="${product.name}">
-                                        <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title">${product.name}</h5>
-                                            <p class="card-text text-success fw-bold mt-auto">Rp ${product.price.toLocaleString()}</p>
-                                        </div>
-                                    </a>
-                                    <a href="https://wa.me/263780379588?text=Saya%20ingin%20membeli%20${encodeURIComponent(product.name)}%20dengan%20harga%20Rp%20${product.price.toLocaleString()}" class="btn btn-buy">Buy Now</a>
+                            const productCard = `
+                                <div class="col-md-4 col-lg-3">
+                                    <div class="product-card card h-100">
+                                        <a href="detail.html?id=${product.id}" class="card-link">
+                                            <div class="image-container">
+                                                <img src="/uploads/${product.images[0]}" class="product-img card-img-top" alt="${product.name}">
+                                                ${product.stock > 0 ? `<span class="stock-badge">Stock: ${product.stock}</span>` : '<span class="stock-badge bg-danger">Out of Stock</span>'}
+                                                ${product.pinned ? '<span class="pinned-badge">Pinned</span>' : ''}
+                                            </div>
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">${product.name}</h5>
+                                                <p class="card-text text-success fw-bold mt-auto">Rp ${product.price.toLocaleString()}</p>
+                                            </div>
+                                        </a>
+                                        <a href="https://wa.me/628123456789?text=Saya%20ingin%20membeli%20${encodeURIComponent(product.name)}%20dengan%20harga%20Rp%20${product.price.toLocaleString()}%20${product.stock > 0 ? '' : '(Produk Kosong)'}" 
+                                           class="btn btn-buy mt-2 ${product.stock <= 0 ? 'disabled btn-secondary' : ''}">
+                                            ${product.stock > 0 ? 'Buy Now' : 'Out of Stock'}
+                                        </a>
+                                    </div>
                                 </div>
                             `;
-                            container.appendChild(productCard);
+                            container.innerHTML += productCard;
                         });
                     })
                     .catch(error => {
                         console.error('Error fetching products:', error);
-                        container.innerHTML = '<div class="no-products">Error loading products</div>';
+                        document.getElementById('products-container').innerHTML = '<div class="col-12 text-center"><p>Error loading products</p></div>';
                     });
             }
         });
